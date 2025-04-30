@@ -66,6 +66,72 @@ paths:
             application/json:
               schema:
                 type: object
+  /user/change-password/:
+    put:
+      summary: Change Password
+      description: Change the password of the current user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+              required:
+              - old_password
+              - new_password
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+  /user/logout/:
+    post:
+      summary: Logout
+      description: Logs out the current user.
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+  /user/list/:
+    get:
+      summary: List Users
+      description: List all users (admin only).
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /user/profile/{id}/:
+    get:
+      summary: User Profile
+      description: Retrieve user profile by ID.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
 components:
   securitySchemes:
     BearerAuth:
