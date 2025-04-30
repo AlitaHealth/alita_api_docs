@@ -132,6 +132,228 @@ paths:
             application/json:
               schema:
                 type: object
+  /rest/agent-data/{slug}/:
+    get:
+      summary: Get Agent Data
+      description: Retrieve agent-specific data by slug.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Agent data response
+          content:
+            application/json:
+              schema:
+                type: object
+  /rest/organization/:
+    get:
+      summary: List Organizations
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create Organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Created
+  /rest/organization/{uuid}/:
+    get:
+      summary: Get Organization
+      parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Organization
+      parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Updated
+  /rest/app-data/:
+    get:
+      summary: List All Apps
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create App
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: App Created
+  /rest/app-data/{slug}/:
+    get:
+      summary: Get App
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update App
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+  /rest/data-source/:
+    get:
+      summary: List Data Sources
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create Data Source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /rest/data-source/{id}/:
+    get:
+      summary: Get Data Source
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Data Source
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+  /llm/chat-session/:
+    get:
+      summary: List Chat Sessions
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create Chat Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /llm/chat-session/{slug}/:
+    get:
+      summary: Get Chat Session
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Chat Session
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+  /llm/chat-history/:
+    get:
+      summary: Chat History
+      description: Fetch historical LLM chat data.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
 components:
   securitySchemes:
     BearerAuth:
