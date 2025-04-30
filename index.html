@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My API Documentation</title>
+    <title>Local Redoc Test</title>
     <meta charset="utf-8" />
     <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-    </style>
   </head>
   <body>
-    <h1>Testing api docs</h1>
-    <!-- <redoc spec-url="https://redocly.github.io/redoc/cli/playground/proxy?url=https://raw.githubusercontent.com/alitahealth/alita_api_docs/main/openapi.yaml"></redoc> -->
-    <redoc spec-url="https://raw.githubusercontent.com/alitahealth/alita_api_docs/main/openapi.yaml"></redoc>
+    <h1>Local Redoc Test</h1>
+    <div id="redoc-container"></div>
+
+    <script>
+      Redoc.init('openapi.yaml', {}, document.getElementById('redoc-container'));
+    </script>
   </body>
 </html>
