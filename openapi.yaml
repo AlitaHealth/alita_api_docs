@@ -1,24 +1,76 @@
 openapi: 3.0.3
 info:
-  title: My API
-  version: 1.0.0
-  description: Example API Documentation
-
+  title: Alita Backend API
+  description: Comprehensive API documentation for Alita backend services.
+  version: '1.0'
+  contact:
+    name: Alita Health
+    url: https://alitahealth.ai
+servers:
+- url: http://localhost:8000/api/v1
 paths:
-  /users/:
-    get:
-      summary: List Users
+  /user/login/:
+    post:
+      summary: Login
+      description: Authenticate a user and return tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: your_password
+              required:
+              - email
+              - password
       responses:
         '200':
-          description: Successful response
+          description: Successful login
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
+                type: object
+  /user/register/:
+    post:
+      summary: Register
+      description: Register a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                is_admin:
+                  type: boolean
+              required:
+              - email
+              - username
+              - password
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+- BearerAuth: []
