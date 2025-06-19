@@ -53,6 +53,28 @@ components:
           type: string
           format: date-time
 
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        organization:
+          type: integer
+        service_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceType'
+
+    ServiceType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
     App:
       type: object
       properties:
@@ -421,6 +443,196 @@ paths:
                     type: boolean
                   data:
                     type: string
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /organization/{uuid}/locations/:
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get locations in an organization
+      tags:
+        - Organization
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Locations list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Location'
+                  status:
+                    type: string
+                  code:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new location at an organization
+      tags:
+        - Organization
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: unique name of new location
+                service_type_ids:
+                  type: array
+                  description: List of service type IDs to associate with the location
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Location created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                  status:
+                    type: string
+                  code:
+                    type: integer
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update Location
+      tags:
+        - Organization
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - location_id
+              properties:
+                location_id:
+                  type: integer
+                name:
+                  type: string
+                service_type_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  service_types:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceType'
+                  status:
+                    type: string
+                  code:
+                    type: integer
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete organization
+      tags:
+        - Organization
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - location_id
+              properties:
+                location_id:
+                  type: integer
+      responses:
+        '200':
+          description: Location deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  status:
+                    type: string
+                  code:
+                    type: integer
         '404':
           description: Organization not found
           content:
