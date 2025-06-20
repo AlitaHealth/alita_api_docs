@@ -33,25 +33,36 @@ components:
           type: string
         site:
           type: string
-        locations_data:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              service_types:
-                type: array
-                items:
-                  type: string
-        is_deleted:
-          type: boolean
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+        is_deleted:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgPermissions'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+        created_by_id:
+          type: integer
+
+    OrgPermissions:
+      type: object
+      properties:
+        user_email:
+          type: string
+        permission_level:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
 
     Location:
       type: object
@@ -78,33 +89,76 @@ components:
     App:
       type: object
       properties:
-        uuid:
+        id:
+          type: integer
+        style:
+          nullable: true
+        data:
+          type: array
+          items: { }
+        meetings:
+          type: array
+          items: { }
+        bubbles:
+          type: array
+          items: { }
+        organization:
+          type: integer
+        get_url_map:
           type: string
-          format: uuid
+        company_name:
+          type: string
         name:
+          type: string
+        uuid:
           type: string
         nickname:
           type: string
-        initial_message:
-          type: string
-        system_prompt:
-          type: string
+          nullable: true
         type:
           type: string
+          nullable: true
         location:
           type: string
+          nullable: true
         isLanding:
           type: boolean
-        published:
-          type: boolean
-        organization:
-          $ref: '#/components/schemas/Organization'
+        initial_message:
+          type: string
+          nullable: true
+        system_prompt:
+          type: string
+        ai_provider:
+          type: string
+          nullable: true
+        ai_model:
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+        published:
+          type: boolean
+        logo:
+          type: string
+          nullable: true
+        agent_img:
+          type: string
+          nullable: true
+        agent_uuid:
+          type: string
+          nullable: true
+        calendly_integration:
+          type: boolean
+        prechat:
+          type: boolean
+        subtitle:
+          type: string
+        created_by:
+          type: integer
 
     Agent:
       type: object
@@ -467,6 +521,7 @@ paths:
       summary: Get locations in an organization
       tags:
         - Organization
+        - Location
       security:
         - bearerAuth: [ ]
       responses:
@@ -489,11 +544,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
     post:
       summary: Create a new location at an organization
       tags:
         - Organization
+        - Location
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -548,6 +603,7 @@ paths:
       summary: Update Location
       tags:
         - Organization
+        - Location
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -600,9 +656,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
-      summary: Delete organization
+      summary: Delete Location
       tags:
         - Organization
+        - Location
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -639,6 +696,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /organization/{uuid}/users/:
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get Users in an organization
+      tags:
+        - Organization
+        - Users
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  permission_level:
+                    type: string
+                  last_login:
+                    type: string
+                  name:
+                    type: string
+                  locations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                  status:
+                    type: string
+                  code:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /service-types/:
+    get:
+      summary: Get all allowed service types
+      tags:
+        - Service Types
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Service types list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceType'
+                  status:
+                    type: string
+                  code:
+                    type: integer
         '401':
           description: Unauthorized
           content:
