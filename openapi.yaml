@@ -287,6 +287,24 @@ components:
         created_by:
           type: integer
 
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        profile_picture_url:
+          type: uri
+        openai_api_key:
+          type: string
+        job_title:
+          type: string
+        user:
+          type: integer
+
     ErrorResponse:
       type: object
       properties:
@@ -298,10 +316,12 @@ components:
     SuccessResponse:
       type: object
       properties:
-        success:
-          type: boolean
-        data:
-          type: object
+        status:
+          type: string
+          example: success
+        code:
+          type: integer
+          example: 200
 
 paths:
   /token/:
@@ -401,11 +421,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         200:
-          description: Access Token
+          description: Token's User
           content:
             application/json:
               schema:
                 type: object
+                properties:
+                  data:
+                    properties:
+                      valid:
+                        type: boolean
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          email:
+                            type: string
 
   /login/:
     post:
@@ -899,24 +931,13 @@ paths:
                 type: object
                 properties:
                   data:
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          openai_api_key:
-                            type: string
-                          user:
-                            type: integer
+                    $ref: '#/components/schemas/UserProfile'
                   status:
                     type: string
+                    example: success
                   code:
                     type: integer
+                    example: 200
     put:
       description: Update profile
       tags:
@@ -953,26 +974,56 @@ paths:
                 type: object
                 properties:
                   data:
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          openai_api_key:
-                            type: string
-                          user:
-                            type: integer
+                    $ref: '#/components/schemas/UserProfile'
                   status:
                     type: string
+                    example: success
                   code:
                     type: integer
-  /data/:
+                    example: 200
 
+  /profile/upload-picture/:
+    put:
+      summary: Upload or update user's profile picture
+      description: Uploads a new profile picture for the authenticated user. Only `.jpg`, `.jpeg`, `.png`, and `.webp` files are supported.
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - profile_picture
+              properties:
+                profile_picture:
+                  type: string
+                  format: binary
+                  description: Image file to upload (jpg, jpeg, png, webp)
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Invalid request or file type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error or upload failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /data/:
     get:
       summary: Returns user and profile data for auth token
       tags:
@@ -1013,8 +1064,209 @@ paths:
                             type: integer
                   status:
                     type: string
+                    example: success
                   code:
                     type: integer
+                    example: 200
+
+  /validate-email:
+    get:
+      summary: Validate an email address and send an activation code
+      tags:
+        - Account
+      parameters:
+        - in: query
+          name: email
+          required: true
+          schema:
+            type: string
+            format: email
+        - in: query
+          name: invited
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        200:
+          description: Email is available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      code:
+                        type: string
+                  status:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+                required: [ success, data ]
+        400:
+          description: Email is invalid or already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Validate the activation code for an email address
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ email, code ]
+              properties:
+                email:
+                  type: string
+                  format: email
+                code:
+                  type: string
+                  minLength: 8
+                  maxLength: 8
+      responses:
+        200:
+          description: Code is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      email:
+                        type: string
+                  status:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+        400:
+          description: Code is invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Add domain(s) to the blacklist
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ email ]
+              properties:
+                email:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+      responses:
+        200:
+          description: Domains processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      added:
+                        type: array
+                        items:
+                          type: string
+                      skipped:
+                        type: array
+                        items:
+                          type: string
+                  status:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+        400:
+          description: Request missing email domains
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Remove domain(s) from the blacklist
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ email ]
+              properties:
+                email:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+      responses:
+        200:
+          description: Domains removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      deleted:
+                        type: array
+                        items:
+                          type: string
+                      not_found:
+                        type: array
+                        items:
+                          type: string
+                  status:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+        400:
+          description: Request missing email domains
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 
   # Organization Management
   /organization/:
@@ -1232,7 +1484,6 @@ paths:
     get:
       summary: Get locations in an organization
       tags:
-        - Organization
         - Location
       security:
         - bearerAuth: [ ]
@@ -1259,7 +1510,6 @@ paths:
     post:
       summary: Create a new location at an organization
       tags:
-        - Organization
         - Location
       security:
         - bearerAuth: [ ]
@@ -1314,7 +1564,6 @@ paths:
     patch:
       summary: Update Location
       tags:
-        - Organization
         - Location
       security:
         - bearerAuth: [ ]
@@ -1370,7 +1619,6 @@ paths:
     delete:
       summary: Delete Location
       tags:
-        - Organization
         - Location
       security:
         - bearerAuth: [ ]
@@ -1425,7 +1673,6 @@ paths:
     get:
       summary: Get Users in an organization
       tags:
-        - Organization
         - Users
       security:
         - bearerAuth: [ ]
@@ -1471,7 +1718,6 @@ paths:
     post:
       summary: Create user at organization
       tags:
-        - Organization
         - Users
       security:
         - bearerAuth: [ ]
@@ -1514,7 +1760,6 @@ paths:
     patch:
       summary: Update user at organization
       tags:
-        - Organization
         - Users
       security:
         - bearerAuth: [ ]
@@ -1557,8 +1802,6 @@ paths:
       summary: Get all allowed service types
       tags:
         - Service Types
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: Service types list
@@ -1581,6 +1824,183 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /work-types/:
+    get:
+      summary: Get all allowed work types
+      tags:
+        - Work Types
+      responses:
+        '200':
+          description: Work types list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        name:
+                          type: string
+                        icon:
+                          type: string
+                          example: https://example.com/image
+                  status:
+                    type: string
+                  code:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /validate-url/:
+    get:
+      summary: Validate or list blacklisted URLs
+      tags:
+        - URL
+      parameters:
+        - name: url
+          in: query
+          required: false
+          schema:
+            type: string
+          description: URL to validate
+      responses:
+        '200':
+          description: URL is valid or list of blacklisted URLs
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: URL is valid
+                  - type: object
+                    properties:
+                      urls:
+                        type: array
+                        items:
+                          type: string
+                        example: [ "example.com", "test.com" ]
+        '400':
+          description: URL is blacklisted or already in use
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: URL is blacklisted
+
+    post:
+      summary: Add URLs to the blacklist
+      tags:
+        - URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                urls:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - urls
+      responses:
+        '200':
+          description: URLs processed and blacklisted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: URL(s) processed
+                  blacklisted:
+                    type: array
+                    items:
+                      type: string
+                    example: [ "https://spam.com" ]
+                  skipped:
+                    type: array
+                    items:
+                      type: string
+                    example: [ "https://scam.com" ]
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+    delete:
+      summary: Remove URLs from the blacklist
+      tags:
+        - URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - urls
+              properties:
+                urls:
+                  type: array
+                  items:
+                    type: string
+              example:
+                urls: [ "http://spam.com", "http://scam.com" ]
+      responses:
+        '200':
+          description: URLs deleted from blacklist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: URLs deleted
+                  deleted:
+                    type: array
+                    items:
+                      type: string
+                    example: [ "http://spam.com" ]
+                  skipped:
+                    type: array
+                    items:
+                      type: string
+                    example: [ "http://scam.com" ]
+        '400':
+          description: Invalid request or URLs not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: None of the URLs exist in the blacklist
 
   # App Management
   /app-list/:
