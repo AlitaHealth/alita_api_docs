@@ -1114,7 +1114,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 400
+                  data:
+                    type: string
+                  status:
+                    type: string
 
     post:
       summary: Validate the activation code for an email address
